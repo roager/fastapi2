@@ -89,9 +89,4 @@ Opcionales (si usarás Postgres en lugar de SQLite):
    ```bash
    curl http://127.0.0.1:8000/users/
    ```
-   - Crear usuario (POST):
-
-bash
-Copy
-Edit
 
