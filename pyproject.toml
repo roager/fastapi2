@@ -25,3 +25,6 @@ pytest = "^8.3.5"
 pytest-asyncio = "^1.0.0"
 httpx = "^0.24.0"
 
+[tool.poetry.requires-plugins]
+poetry-plugin-export = ">=1.8"
+

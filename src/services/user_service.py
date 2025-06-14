@@ -22,6 +22,19 @@ class UserService:
     """
 
     @staticmethod
+    def get_age_group(age: int) -> str:
+        if 0 < age < 18:
+            age_group = "underage"
+        elif 18 <= age < 64:
+            age_group = "adult"
+        elif age >= 64:
+            age_group = "senior"
+        else:
+            raise ValueError("Edad invalida")
+        return age_group
+
+
+    @staticmethod
     async def get_all() -> List[User]:
         """
         Recupera todos los usuarios registrados en la base de datos.

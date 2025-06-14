@@ -18,7 +18,6 @@ from pydantic import BaseModel, EmailStr
 # ------------------------------------------------------------------------------
 # APIRouter permite modularizar las rutas y luego montarlas en el FastAPI app
 router = APIRouter(
-    prefix="/users",            # Prefijo común para todas las rutas de este router
     tags=["users"],             # Etiquetas para agrupar en la documentación automática
     responses={404: {"description": "Not found"}},  # Respuestas genéricas
 )
@@ -110,3 +109,16 @@ async def create_user(payload: UserIn):
 
     # 3. Devolver objeto Pydantic serializado a JSON
     return user
+
+@router.get("/group")
+async def get_user_group(age: int):
+    try:
+        age_group = UserService.get_age_group(age)
+        return {"age_group": age_group}
+    except ValueError as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(error)
+        )
+
+

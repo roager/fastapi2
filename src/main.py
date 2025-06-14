@@ -81,7 +81,11 @@ async def root():
     Returns:
         dict: Mensaje de bienvenida.
     """
-    return {"message": "¡Hola, mundo!"}
+    return {"message": "¡Hola, mundo!!!!!"}
+
+@app.get("/ping")
+async def ping():
+    return {"message": "pong"}
 
 
 

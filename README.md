@@ -9,16 +9,14 @@ Incluye:
 - Validación de datos con Pydantic
 - Gestión de variables de entorno con Python-Decouple
 - Esqueleto de tests con pytest
-- Listo para desplegar en Heroku (Procfile, runtime.txt)
 
 ---
 
 ## Requisitos previos
 
-1. **Python 3.10+** instalado (ver [`runtime.txt`](runtime.txt) para versión exacta).  
-2. **Git** (para clonar el repositorio).  
-3. **Poetry** (gestor de dependencias y entorno virtual).  
-   - Si no lo tienes, instala siguiendo [la guía oficial](https://python-poetry.org/docs/#installation).
+1. **Git** (para clonar el repositorio).  
+2  **Poetry** (gestor de dependencias y entorno virtual).  
+   - Si no está instalado, instalar siguiendo [la guía oficial](https://python-poetry.org/docs/#installation).
 
 Opcionales (si usarás Postgres en lugar de SQLite):
 
@@ -29,17 +27,17 @@ Opcionales (si usarás Postgres en lugar de SQLite):
 
 ## Configurar el proyecto
 
-1. **Clona** este repositorio a tu máquina local:
+1. **Clonar** este repositorio a tu máquina local:
 
    ```bash
    git clone https://github.com/jonaths/fastapi_starter
 
-2. Instala dependencias con Poetry y crea un entorno virtual:
+2. Instalar dependencias con Poetry y crea un entorno virtual:
 
    ```bash
    poetry install
 
-3. Configura variables de entorno
+3. Configurar variables de entorno
 
    ```bash
    cp .env.example .env
@@ -63,11 +61,11 @@ Opcionales (si usarás Postgres en lugar de SQLite):
    Notas:
 
    - En desarrollo, basta con SQLite (sqlite://db.sqlite3).
-   - En producción (Heroku o Docker), apunta a tu instancia de Postgres mediante DATABASE_URL.
+   - En producción apuntar a Postgres mediante DATABASE_URL.
 
 ## Levantar la aplicación en local
 
-1. Levanta el servidor Uvicorn
+1. Levantar el servidor Uvicorn
 
    ```bash
    poetry run uvicorn src.main:app --reload
@@ -76,7 +74,7 @@ Opcionales (si usarás Postgres en lugar de SQLite):
    - --reload activa recarga automática cuando detecta cambios en el código.
    - Por defecto, corre en http://127.0.0.1:8000 (o el puerto que definas en .env).
 
-2. Verifica en el navegador o con curl
+2. Verificar en el navegador o con curl
    
    - Abre tu navegador en http://127.0.0.1:8000/docs para acceder a la documentación interactiva Swagger UI.
    - Para probar rápidamente el endpoint raíz:
@@ -84,9 +82,87 @@ Opcionales (si usarás Postgres en lugar de SQLite):
       curl http://127.0.0.1:8000/
       # Debe devolver: {"message":"¡Hola, mundo!"}
 
-3. Prueba algunos endpoints de ejemplo:
+3. Probar algunos endpoints de ejemplo:
    - Listar usuarios (GET)
    ```bash
    curl http://127.0.0.1:8000/users/
    ```
+   
+## Deployment en Vercel
 
+### Preliminares
+
+1. Se debe asegurar que el plugin para exportar esté declarado en `pyproject.toml`:
+
+   ```toml
+   [tool.poetry.requires-plugins]
+   poetry-plugin-export = ">=1.8"
+   ```
+
+2. Se debe verificar que `src/api/index.py` expone la aplicación de FastAPI:
+
+   ```python
+   import os
+   import sys
+
+   HERE = os.path.dirname(__file__)
+   SRC_ROOT = os.path.dirname(HERE)
+   sys.path.append(SRC_ROOT)
+
+   from main import app
+   ```
+
+3. Se debe tener instalado [Vercel CLI](https://www.npmjs.com/package/vercel) y haber iniciado sesión:
+
+   ```bash
+   vercel login
+   ```
+
+4. Se debe confirmar que `vercel.json` existe en la raíz y contiene la configuración adecuada:
+
+   ```json
+   {
+     "version": 2,
+     "builds": [
+       {
+         "src": "src/api/index.py",
+         "use": "@vercel/python",
+         "config": { "runtime": "python3.12" }
+       }
+     ],
+     "routes": [
+       { "src": "/(.*)", "dest": "src/api/index.py" }
+     ]
+   }
+   ```
+
+### Despliegue
+
+1. Se debe exportar las dependencias a `requirements.txt`:
+
+   ```bash
+   poetry export --without-hashes -f requirements.txt > requirements.txt
+   ```
+
+2. Se debe vincular el directorio al proyecto de Vercel:
+
+   ```bash
+   vercel link
+   ```
+   - Cuando pregunte si se quiere enlazar a un proyecto existente, se debe elegir **No**.
+
+3. Se puede ejecutar el despliegue inicial y luego publicar en producción:
+
+   ```bash
+   vercel
+   vercel --prod
+   ```
+
+### Comprobación
+
+- Se puede visitar la URL de producción para verificar que la API esté disponible:
+
+  ```
+  https://<tu-proyecto>.vercel.app/docs
+  ```
+```
