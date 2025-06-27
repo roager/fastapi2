@@ -26,6 +26,7 @@ handler.setFormatter(logging.Formatter(fmt=LOG_FORMAT, datefmt=DATE_FORMAT))
 # Logger raíz
 logger = logging.getLogger()
 logger.setLevel(LOG_LEVEL)
-# Evitamos duplicar handlers si este módulo se importa varias veces
+
+# Evitar duplicar handlers si este módulo se importa varias veces
 if not logger.handlers:
     logger.addHandler(handler)

@@ -105,14 +105,6 @@ async def create_user(payload: UserIn):
     # 1. Crear usuario en la capa de servicio
     user = await UserService.create(name=payload.name, email=payload.email)
 
-    # 2. Validación de creación exitosa
-    if user is None:
-        # HTTPException detona una respuesta con código y mensaje custom
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No se pudo crear el usuario"
-        )
-
     # 3. Devolver objeto Pydantic serializado a JSON
     return user
 
