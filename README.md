@@ -165,7 +165,6 @@ Opcionales (si usarás Postgres en lugar de SQLite):
   ```
   https://<tu-proyecto>.vercel.app/docs
   ```
-```
 
 #### Base de datos Postgres en Vercel
 
