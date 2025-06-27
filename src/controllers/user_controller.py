@@ -10,6 +10,8 @@ Este módulo define:
 """
 
 from fastapi import APIRouter, HTTPException, status
+
+from src.config import logger
 from src.services.user_service import UserService
 from pydantic import BaseModel, EmailStr
 
@@ -60,8 +62,12 @@ async def list_users():
     # Lógica:
     # - La capa de servicio abstrae el acceso a la base de datos.
     # - FastAPI transforma el resultado en JSON y aplica el modelo de respuesta.
-    return await UserService.get_all()
-
+    print("Hola...")
+    try:
+        return await UserService.get_all()
+    except Exception as exception:
+        print(exception)
+        logger.exception(exception)
 
 # ------------------------------------------------------------------------------
 # 4. Endpoint: Crear un usuario

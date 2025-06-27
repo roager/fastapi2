@@ -166,3 +166,32 @@ Opcionales (si usarás Postgres en lugar de SQLite):
   https://<tu-proyecto>.vercel.app/docs
   ```
 ```
+
+#### Base de datos Postgres en Vercel
+
+1. Asegurarse que hay una linea con   ```"asyncpg (>=0.30.0,<0.31.0)"  ``` en pyproject.toml. Si no la hay instalar la dependencia y actualizar requirements.txt con el comando 1. 
+
+2. En el dashboard de Vercel crear una base de datos en Storage -> Create New -> Neon Serverless Postgres y recuperar la variable de ambiente DATABASE_URL 
+
+**Uso de la base de datos con la aplicacion local**
+
+3.1. Cambiar la variable de ambiente correspondiente para usar Postgres en lugar de SQLite (quitar el query string de SSL)
+
+3.2. Levantar la aplicación
+
+   ```bash
+     poetry run uvicorn src.main:app --reload
+   ```
+
+3.3. Visitar ```https://<tu-proyecto>.vercel.app/docs``` para interactuar con la aplicación. 
+
+   ```
+      DATABASE_URL=postgres://neondb_owner:xxx@ep-plain-bush-xxx-pooler.us-east-1.aws.neon.tech/neondb
+   ```
+
+**Uso de la base de datos con la aplicación en línea**
+
+4.1. Verificar en el dashboard de Vercel Settings -> Environment Variables que la variable DATABASE_URL
+   esté seteada exactamente igual que en el archivo .env local. 
+
+4.2. Hacer un nuevo deployment usando los comandos de Vercel.

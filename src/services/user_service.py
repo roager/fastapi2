@@ -75,8 +75,4 @@ class UserService:
             ... else:
             ...     print("Error al crear usuario")
         """
-        try:
-            return await User.create(name=name, email=email)
-        except Exception:
-            # Captura genérica; en producción, manejar excepciones específicas
-            return None
+        return await User.create(name=name, email=email)

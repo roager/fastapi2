@@ -1,12 +1,11 @@
 import os
 import sys
 
-# 1) Calcular el directorio src/
-HERE = os.path.dirname(__file__)            # …/src/api
-SRC_ROOT = os.path.dirname(HERE)            # …/src
+# 1) Ubicaciones de carpeta
+HERE     = os.path.dirname(__file__)        # …/src/api
+SRC_DIR  = os.path.dirname(HERE)            # …/src
+ROOT_DIR = os.path.dirname(SRC_DIR)         # …/<tu-repo-root>
+sys.path.insert(0, ROOT_DIR)
 
-# 2) Añádir al path para que Python encuentre main.py
-sys.path.append(SRC_ROOT)
-
-# 3) Importar aplicación FastAPI
-from main import app
+# 2) Importa la app (que ahora tendrá el middleware)
+from src.main import app

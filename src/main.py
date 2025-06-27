@@ -1,91 +1,55 @@
-"""
-src/main.py
+# src/main.py
 
-Punto de entrada de la aplicación FastAPI.
-
-Este módulo configura:
-  1. La instancia de FastAPI con metadata y rutas de documentación.
-  2. El registro de Tortoise ORM para la conexión a la base de datos.
-  3. La inclusión de routers modulares (e.g., users).
-  4. Endpoints globales (e.g., ruta raíz).
-
-Variables de configuración:
-  - APP_ENV (str): Entorno de ejecución ('development', 'production', etc.).
-  - PORT (int): Puerto en el que corre la aplicación.
-  - DATABASE_URL (str): Cadena de conexión a la base de datos (SQLite, Postgres, etc.).
-"""
-
-from fastapi import FastAPI
-from tortoise.contrib.fastapi import register_tortoise
-from src.config import DATABASE_URL, APP_ENV, PORT
+import logging
+from fastapi import FastAPI, Request
+from tortoise import Tortoise
+from src.config import DATABASE_URL, APP_ENV, logger
 from src.controllers.user_controller import router as user_router
 
-
-# 1. Instancia FastAPI
-# ---------------------
-# - title: Título de la API en la documentación OpenAPI/Swagger.
-# - version: Versión de la API.
-# - description: Descripción general (opcional).
-# - docs_url: Ruta para Swagger UI. Solo activa en desarrollo.
+# 1) Crea la app
 app = FastAPI(
     title="My FastAPI App",
     version="0.1.0",
-    description="API de ejemplo con FastAPI, Tortoise ORM y modularidad por capas.",
+    description="API con FastAPI y Tortoise ORM",
     openapi_url="/openapi.json",
     docs_url="/docs" if APP_ENV == "development" else None,
 )
 
 
-# 2. Incluir routers modulares
-# -----------------------------
-# Agrupa rutas relacionadas bajo un mismo prefijo y tags.
-# En main.py no definimos lógica; solo montamos controladores.
-app.include_router(
-    user_router,
-    prefix="/users",      # Ruta base para todas las operaciones de usuario
-    tags=["users"],        # Sección en Swagger UI
-)
+# 2) Middleware para inicializar Tortoise en el mismo loop que atiende la petición
+@app.middleware("http")
+async def orm_per_request(request: Request, call_next):
+    # 1) Inicializa en el mismo loop si no está
+    if not Tortoise.apps:
+        logger.info("⏳ Inicializando ORM…")
+        await Tortoise.init(
+            db_url=DATABASE_URL,
+            modules={"models": ["src.models"]},
+        )
+        if APP_ENV == "development":
+            await Tortoise.generate_schemas()
+        logger.info("✅ ORM listo")
+    # 2) Ejecuta tu ruta
+    response = await call_next(request)
+    # 3) Cierra conexiones para que no queden en un estado intermedio
+    logger.info("⏳ Cerrando conexiones ORM…")
+    await Tortoise.close_connections()
+    # 4) Limpia el estado para que en la siguiente petición la inicialice de nuevo
+    Tortoise.apps = {}
+    logger.info("✅ ORM cerrado")
+    return response
 
 
-# 3. Configuración de Tortoise ORM
-# --------------------------------
-# register_tortoise:
-# - app: instancia FastAPI para enganchar eventos de arranque/shutdown.
-# - db_url: cadena de conexión, p.ej. sqlite://db.sqlite3 o postgres://...
-# - modules: diccionario alias->lista de módulos donde están los modelos.
-# - generate_schemas: si True, crea tablas automáticamente al arrancar (útil en dev).
-# - add_exception_handlers: registra manejadores de excepción para errores de BD.
-register_tortoise(
-    app=app,
-    db_url=DATABASE_URL,
-    modules={"models": ["src.models"]},  # Alias 'models' para User, etc.
-    generate_schemas=True,
-    add_exception_handlers=True,
-)
+# 3) Monta tu router de usuarios
+app.include_router(user_router, prefix="/users", tags=["users"])
 
 
-# 4. Endpoint global: Ruta raíz
-# -----------------------------
-@app.get(
-    "/",
-    summary="Ruta raíz",
-    response_description="Mensaje de bienvenida al consumidor de la API",
-    status_code=200,
-)
+# 4) Endpoints globales
+@app.get("/")
 async def root():
-    """
-    root
-
-    Endpoint que devuelve un mensaje de confirmación de que la API está levantada.
-
-    Returns:
-        dict: Mensaje de bienvenida.
-    """
     return {"message": "¡Hola, mundo!!!!!"}
+
 
 @app.get("/ping")
 async def ping():
     return {"message": "pong"}
-
-
-
